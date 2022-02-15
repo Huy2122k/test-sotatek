@@ -5,7 +5,16 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  --bg-main: #fff;
+  --bg-scnd: #f0f4f3;
+  --txt-main: #fff;
+  --txt-medium: #e4e4e4;
+  --txt-medium-dark: #acacac;
+  --txt-box-bg: #f4f8f7;
+  --accent: #3aaf9f;
+  height:100vh;
 }
+html, body{min-height:100%;}
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
