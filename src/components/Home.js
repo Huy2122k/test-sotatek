@@ -6,10 +6,12 @@ import taskDataService from "../services/task.service";
 const Home = () => {
     const [taskData, setTaskData] = useState([]);
     const [titleSearch, setTitleSearch] = useState('');
-
+    const [hasConnect, setConnect] = useState(true);
+    
 
     const getTaskListData = () => {
-        taskDataService
+        if(hasConnect){
+            taskDataService
             .getAll(titleSearch)
             .then((response) => {
                 let dataReceived = response.data
@@ -17,11 +19,13 @@ const Home = () => {
                 dataReceived.sort(function (a, b) {
                         return new Date(a.dueDate) - new Date(b.dueDate);
                 });
+                localStorage.setItem("task-list-local", JSON.stringify(dataReceived));
                 setTaskData([...dataReceived]);
             })
             .catch((e) => {
                 alert("server error, using localStorage!")
                 console.log(e);
+                setConnect(false);
                 if ("task-list-local" in localStorage) {
                     let arrayData = JSON.parse(
                         localStorage.getItem("task-list-local")
@@ -37,22 +41,44 @@ const Home = () => {
                     setTaskData([...arrayData]);
                 }
             });
+        }
+        else{
+            if ("task-list-local" in localStorage) {
+                    let arrayData = JSON.parse(
+                        localStorage.getItem("task-list-local")
+                    );
+                    if (titleSearch !== "") {
+                        arrayData = arrayData.filter((task) =>
+                        task.taskTitle.includes(titleSearch)
+                        );
+                    }
+                    arrayData.sort(function (a, b) {
+                        return new Date(a.dueDate) - new Date(b.dueDate);
+                    });
+                    setTaskData([...arrayData]);
+                }
+        }
     }
 
     const handleDeleteTask = (taskTitle) => {
         let tempData = taskData;
         tempData = tempData.filter((item) => !taskTitle.includes(item.taskTitle));
         localStorage.setItem("task-list-local", JSON.stringify(tempData));
-        taskDataService
-            .delete(taskTitle)
-            .then((response) => {
+        if(hasConnect){
+            taskDataService
+                .delete(taskTitle)
+                .then((response) => {
 
-                console.log(response.data);
-                getTaskListData();
-            })
-            .catch((e) => {
-                console.log(e);
-            });
+                    console.log(response.data);
+                    getTaskListData();
+                })
+                .catch((e) => {
+                    alert("delete task error")
+                    console.log(e);
+                });
+        }else{
+            getTaskListData();
+        }
     }
     const handleUpdateTask = (task,oldTitle) => {
         if(taskData.some((element) => ((element.taskTitle === task.taskTitle) && (element.taskTitle !== oldTitle)))) {
@@ -63,21 +89,28 @@ const Home = () => {
         tempData = tempData.filter((item) => item.taskTitle !== oldTitle);
         tempData.push(task);
         localStorage.setItem("task-list-local", JSON.stringify(tempData));
-        let datasend = {
-            oldTitle: oldTitle,
-            task: task,
+        if(hasConnect){
+            let dataSend = {
+                oldTitle: oldTitle,
+                task: task,
+            }
+            taskDataService
+                .update(dataSend)
+                .then((response) => {
+                    console.log(response.data);
+                    getTaskListData();
+                    alert("successfully updated");
+                })
+                .catch((e) => {
+                    console.log(e);
+                    alert("update error");
+                }); 
         }
-        taskDataService
-            .update(datasend)
-            .then((response) => {
-                console.log(response.data);
-                getTaskListData();
-                alert("successfully updated");
-            })
-            .catch((e) => {
-                console.log(e);
-                alert("update error");
-            });
+        else{
+            getTaskListData();
+            alert("successfully updated");
+        }
+
     };
 
     const handleAddTask = (task) => {
@@ -88,7 +121,8 @@ const Home = () => {
         let tempData = taskData;
         tempData.push(task);
         localStorage.setItem("task-list-local", JSON.stringify(tempData));
-        taskDataService
+        if(hasConnect){
+            taskDataService
             .create(task)
             .then((response) => {
                 console.log(response.data);
@@ -97,6 +131,11 @@ const Home = () => {
             .catch((e) => {
                 console.log(e);
             });
+        }else{
+            getTaskListData();
+
+        }
+        
     }
     useEffect(() => {
         getTaskListData();
@@ -104,7 +143,9 @@ const Home = () => {
     return (
         <div className="container">
             <div className="AlignLeft CusForm">
-                Create a new task!
+                <h3 >
+                    Create a new task ➕
+                </h3>
                 <Task
                     data = {{ 
                             taskTitle:"",
@@ -120,6 +161,8 @@ const Home = () => {
                     handleUpdateTask={handleUpdateTask}
                     handleDeleteTask={handleDeleteTask}
                     activeItem={-2}
+                    selectedItem = {[]}
+                    title = {''}
                 >
                 </Task>
             </div>

@@ -19,7 +19,6 @@ const TaskList = (props) => {
     }
     const selectTask = (isSelected,taskTitle) =>{
         let arr = listSelect;            
-        console.log(isSelected);
         if (isSelected){
             arr.push(taskTitle);
         }else{
@@ -27,7 +26,6 @@ const TaskList = (props) => {
             // arr.indexOf(taskTitle) !== -1 && arr.splice(arr.indexOf(taskTitle), 1);
         }
         let setSelected = new Set(arr);
-        console.log(setSelected);
         setListSelect([...setSelected]);
     }
     const clearSelectTask= ()=>{
@@ -42,8 +40,13 @@ const TaskList = (props) => {
     }, []);
     return (
             <div className="AlignRight CusForm">
-                Todo List
-                <input onChange={(e) => props.handleSearch(e.target.value)} placeholder="Enter Post Title"/>
+                <div className="ListHeader">
+                    <h3 >Todo List</h3> 
+                </div>
+                <div className="DivSearch" style={{width:"100%"}}>
+                    <input className="SearchCustom" onChange={(e) => {setPage(0); props.handleSearch(e.target.value)}} placeholder="Enter Post Title"/>
+                </div>
+
                 <div className="sidebar-nav">
                     <div className="sidebar-nav-menu">
                     {
@@ -86,11 +89,11 @@ const TaskList = (props) => {
                             <p>
                                 Select <strong>{listSelect.length}</strong> tasks 
                             </p> 
-                            <button type="button" onClick={ () => clearSelectTask()}>
-                                done
+                            <button className="ButtonHoverAnim Done" type="button" onClick={ () => clearSelectTask()}>
+                                Done
                             </button>
-                            <button type="button" onClick={ () => deleteSelectTask()}>
-                                delete
+                            <button className="ButtonHoverAnim Delete" type="button" onClick={ () => deleteSelectTask()}>
+                                Remove
                             </button>
                         </div>
                     ) :''
